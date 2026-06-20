@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Center GYM - Alumnos por Clase</title>
+    {% load static %}
+    <!-- Cargamos el archivo de estilos CSS del proyecto -->
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <!-- Barra de navegación superior con las pestañas del sistema -->
+    <div class="topbar">
+        <div class="brand">CENTER GYM</div>
+        <div class="nav">
+            <a href="#">Dashboard</a>
+            <a href="{% url 'alumno:lista_alumnos' %}">Clientes</a>
+            <a href="#">Clases</a>
+            <!-- Pestaña activa en blanco porque seguimos dentro de la sección Profesores -->
+            <a href="{% url 'profesor:lista_profesores' %}" style="color:#fff">Profesores</a>
+            <a href="#">Planes</a>
+            <a href="#">Reclamos</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <!-- Encabezado: muestra el nombre de la clase en mayúsculas y sus datos -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+                <!-- |upper convierte el nombre de la clase a mayúsculas -->
+                <h2>{{ clase.nombre|upper }}</h2>
+                <!-- Muestra los días y el horario de la clase separados por | -->
+                <div class="muted">{{ clase.dias }} | {{ clase.horario }}</div>
+            </div>
+
+            <!-- Barra de búsqueda y contador de alumnos -->
+            <div class="controls">
+                <div class="search">
+                    <!-- Formulario de búsqueda por nombre de alumno, se envía por GET -->
+                    <form method="GET" style="display:flex; gap:8px; margin:0;">
+                        <!-- Mantiene el texto buscado en el input después de buscar -->
+                        <input type="text" name="q" placeholder="Buscar alumno..." value="{{ request.GET.q }}">
+                        <button type="submit" class="btn" style="border:none; cursor:pointer;">Buscar</button>
+                    </form>
+                </div>
+                <!-- Muestra la cantidad de alumnos encontrados en la clase -->
+                <div class="muted">{{ alumnos|length }} alumnos</div>
+            </div>
+
+            <!-- Tabla con el listado de alumnos de la clase -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>NOMBRE</th>
+                        <th>APELLIDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Iteramos sobre cada alumno inscripto en la clase -->
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>{{ alumno.nombre }}</td>
+                        <td>{{ alumno.apellido }}</td>
+                    </tr>
+                    <!-- Si la clase no tiene alumnos muestra este mensaje -->
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" style="text-align:center; color:#888; padding:40px;">No hay alumnos en esta clase.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Botón para volver a las clases del profesor -->
+            <div style="margin-top:20px;">
+                <!-- Lleva de vuelta a la vista mis_clases del mismo profesor -->
+                <a href="{% url 'profesor:mis_clases' profesor.id %}" class="btn" style="background:#6c757d;">← Volver</a>
+            </div>
+        </div>
+
+        <!-- Logo fijo en el pie de página -->
+        <div class="logo-footer">
+            <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+        </div>
+    </div>
+</body>
+</html>
+
+
