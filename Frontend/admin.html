@@ -66,6 +66,7 @@
             <section class="card">
                 <div class="card-controls">
                     <form method="get" class="search" action="">
+                        <input type="hidden" name="tab" value="clientes">
                         <span class="search-icon">🔍</span>
                         <input type="text" name="q" placeholder="Buscar por nombre, email o DNI..." value="{{ q_alumnos }}">
                         <button type="submit" class="btn">Buscar</button>
@@ -99,7 +100,13 @@
                                     <td>{{ alumno.MontoDeuda }}</td>
                                     <td>{% if alumno.ultimo_ingreso %}{{ alumno.ultimo_ingreso|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
                                     <td class="actions">
-                                        <a href="#" title="Editar">✏️</a>
+                                        <a href="#" class="edit-alumno-btn" title="Editar"
+                                           data-id="{{ alumno.id }}"
+                                           data-nombre="{{ alumno.nombre }}"
+                                           data-apellido="{{ alumno.apellido }}"
+                                           data-dni="{{ alumno.DNI }}"
+                                           data-montodeuda="{{ alumno.MontoDeuda }}"
+                                           data-clases="{% for c in alumno.clases.all %}{{ c.id }}{% if not forloop.last %},{% endif %}{% endfor %}">✏️</a>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -110,15 +117,32 @@
                         </tbody>
                     </table>
                 </div>
+                {% if alumnos.paginator.num_pages > 1 %}
                 <div class="pagination">
-                    <button class="page">&lt;</button>
-                    <button class="page active">1</button>
-                    <button class="page">2</button>
-                    <button class="page">3</button>
-                    <span class="page-dots">...</span>
-                    <button class="page">&gt;</button>
+                    {% if alumnos.has_previous %}
+                        <a href="?tab=clientes&amp;q={{ q_alumnos|urlencode }}&amp;page={{ alumnos.previous_page_number }}" class="page">&lt;</a>
+                    {% else %}
+                        <button type="button" class="page" disabled>&lt;</button>
+                    {% endif %}
+
+                    {% for num in alumnos.paginator.page_range %}
+                        {% if num == alumnos.number %}
+                            <span class="page active">{{ num }}</span>
+                        {% else %}
+                            <a href="?tab=clientes&amp;q={{ q_alumnos|urlencode }}&amp;page={{ num }}" class="page">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if alumnos.has_next %}
+                        <a href="?tab=clientes&amp;q={{ q_alumnos|urlencode }}&amp;page={{ alumnos.next_page_number }}" class="page">&gt;</a>
+                    {% else %}
+                        <button type="button" class="page" disabled>&gt;</button>
+                    {% endif %}
                 </div>
-                <p class="table-summary">Mostrando {{ alumnos|length }} cliente(s) — hacé clic en una fila para ver el detalle</p>
+                <p class="table-summary">Mostrando {{ alumnos.start_index }}–{{ alumnos.end_index }} de {{ alumnos_total }} cliente(s) — Página {{ alumnos.number }} de {{ alumnos.paginator.num_pages }} — hacé clic en una fila para ver el detalle</p>
+                {% else %}
+                <p class="table-summary">Mostrando {{ alumnos_total }} cliente(s) — Solo 1 página — hacé clic en una fila para ver el detalle</p>
+                {% endif %}
             </section>
         </section>
 
@@ -316,6 +340,49 @@
             </section>
         </section>
     </main>
+
+    <div id="alumnoFormModal" class="modal form-modal" style="display: {% if show_alumno_form %}flex{% else %}none{% endif %};">
+        <div class="modal-content">
+            <h2 class="modal-title" id="alumnoFormTitle">{% if alumno_edit_id %}Editar Cliente{% else %}Editar Cliente{% endif %}</h2>
+            <form method="post" class="form-card" id="alumnoForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="alumno-action" value="editar_alumno">
+                <input type="hidden" name="alumno_id" id="alumno-id" value="{{ alumno_edit_id|default:'' }}">
+                <div class="form-group">
+                    <label for="alumno-nombre">Nombre</label>
+                    <input type="text" id="alumno-nombre" name="nombre" value="{{ alumno_form.nombre|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="alumno-apellido">Apellido</label>
+                    <input type="text" id="alumno-apellido" name="apellido" value="{{ alumno_form.apellido|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="alumno-dni">DNI</label>
+                    <input type="text" id="alumno-dni" name="DNI" value="{{ alumno_form.DNI|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="alumno-deuda">Deuda (en pesos)</label>
+                    <input type="number" id="alumno-deuda" name="MontoDeuda" value="{{ alumno_form.MontoDeuda|default:'0' }}" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="alumno-clases">Clases (seleccioná una o más)</label>
+                    <select id="alumno-clases" name="clases" multiple size="6">
+                        {% for clase in clases %}
+                            <option value="{{ clase.id }}" {% if clase.id in alumno_form.clases_ids %}selected{% endif %}>
+                                {{ clase.nombre }} — {{ clase.horario }}
+                            </option>
+                        {% empty %}
+                            <option disabled>No hay clases</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="alumnoSubmitBtn">Guardar Cambios</button>
+                    <button type="button" id="cancelAlumnoFormBtn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="claseFormModal" class="modal form-modal" style="display: {% if show_clase_form %}flex{% else %}none{% endif %};">
         <div class="modal-content">
@@ -526,6 +593,30 @@
                 });
             });
         }
+
+        initEntityForm({
+            modalId: 'alumnoFormModal',
+            cancelBtnId: 'cancelAlumnoFormBtn',
+            formId: 'alumnoForm',
+            actionInputId: 'alumno-action',
+            idInputId: 'alumno-id',
+            titleId: 'alumnoFormTitle',
+            submitBtnId: 'alumnoSubmitBtn',
+            tab: 'clientes',
+            createAction: 'editar_alumno',
+            editAction: 'editar_alumno',
+            createTitle: 'Editar Cliente',
+            editTitle: 'Editar Cliente',
+            submitCreateText: 'Guardar Cambios',
+            editBtnClass: '.edit-alumno-btn',
+            fields: [
+                { name: 'nombre' },
+                { name: 'apellido' },
+                { name: 'DNI', datasetKey: 'dni' },
+                { name: 'MontoDeuda', datasetKey: 'montodeuda' },
+                { name: 'clases', type: 'multiselect', datasetKey: 'clases' },
+            ],
+        });
 
         initEntityForm({
             modalId: 'planFormModal',

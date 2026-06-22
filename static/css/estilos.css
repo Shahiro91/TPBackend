@@ -458,6 +458,16 @@ tbody tr:hover {
 	padding: 10px 14px;
 	cursor: pointer;
 	transition: background .2s, border-color .2s;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 42px;
+}
+
+.page:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 .page.active {
