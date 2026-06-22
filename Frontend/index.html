@@ -35,8 +35,8 @@
     <div class="login">
       <form action="" method="post">
         {% csrf_token %}
-        <label for="id_username">Usuario</label>
-        <input id="id_username" type="text" name="username" placeholder="Usuario" required>
+        <label for="id_email">Correo electrónico</label>
+        <input id="id_email" type="email" name="email" placeholder="Correo electrónico" required>
         <label for="id_password">Contraseña</label>
         <input id="id_password" type="password" name="password" placeholder="Contraseña" required>
         <button type="submit">Entrar</button>
