@@ -11,23 +11,25 @@
     <div class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="nav">
-            <a href="{% url 'alumno:mis_clases' alumno.id %}">Mis Clases</a>
+            <a href="{% url 'alumno:dashboard' alumno.id %}">Mi Panel</a>
+            <a href="{% url 'alumno:mis_clases' alumno.id %}" class="active">Mis Clases</a>
             <a href="{% url 'alumno:mis_reclamos' alumno.id %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:crear_reclamo' alumno.id %}">Nuevo Reclamo</a>
         </div>
     </div>
 
     <div class="container">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-                <h2 style="margin:0">📚 MIS CLASES</h2>
-                <div class="muted">Alumno: {{ alumno.nombre }} {{ alumno.apellido }}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+                <h2>MIS CLASES</h2>
+                <div class="muted">{{ clases|length }} clases asignadas</div>
             </div>
 
             <div class="controls">
                 <div class="search">
                     <form method="GET" style="display:flex; gap:8px; margin:0;">
                         <input type="text" name="q" placeholder="Buscar clase..." value="{{ request.GET.q }}">
-                        <button type="submit" class="btn" style="background:#ff8a00; color:white; border:none; cursor:pointer;">🔍 Buscar</button>
+                        <button type="submit" class="btn" style="background:#ff8a00; color:white; border:none; cursor:pointer;">Buscar</button>
                     </form>
                 </div>
                 <div class="muted">{{ clases|length }} clases</div>
@@ -36,9 +38,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Clase</th>
-                        <th>Días</th>
-                        <th>Horario</th>
+                        <th>NOMBRE</th>
+                        <th>DÍAS</th>
+                        <th>HORARIO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,8 +57,15 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <div style="margin-top:20px;">
+                <a href="{% url 'alumno:dashboard' alumno.id %}" class="btn" style="background:#6c757d;">← Volver</a>
+            </div>
         </div>
-        <img class="logo-footer" src="/static/LogoAppGym.png" alt="Logo Center GYM">
+
+        <div class="app-footer">
+            <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+        </div>
     </div>
 </body>
 </html>

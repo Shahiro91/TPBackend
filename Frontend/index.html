@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Center GYM - Inicio</title>
+  <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; }
+    .hero { display:flex; align-items:center; gap:20px; padding:40px; background:#ffffff; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:1000px; margin:40px auto; border-radius:8px; }
+    .hero .brand { display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .brand img { width:140px; max-width:100%; height:auto; }
+    .brand h1 { margin:0; font-size:28px; color:#1f2937; text-align:center; }
+    .login { margin-left:auto; }
+    .login form { display:flex; flex-direction:column; gap:8px; min-width:260px; }
+    .login input { padding:10px; border:1px solid #d1d5db; border-radius:6px; }
+    .login button { padding:10px; background:#f97316; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    .login button:hover { background:#ea580c; }
+    .small { font-size:13px; color:#6b7280; }
+    .messages { margin-top:8px; color:#b91c1c; }
+  </style>
+</head>
+<body>
+
+  <main class="hero">
+    <div class="brand">
+      <img src="{% static 'images/LogoAppGym.png' %}" alt="Logo Center GYM">
+      <div>
+        <h1>Bienvenidos a Center GYM</h1>
+        <p class="small">Tu centro de entrenamiento — administra clases, profesores y alumnos</p>
+      </div>
+    </div>
+
+    <div class="login">
+      <form action="" method="post">
+        {% csrf_token %}
+        <label for="id_email">Correo electrónico</label>
+        <input id="id_email" type="email" name="email" placeholder="Correo electrónico" required>
+        <label for="id_password">Contraseña</label>
+        <input id="id_password" type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Entrar</button>
+        <p class="small">¿Olvidaste tu contraseña? <a href="/password-reset/">Recuperarla</a></p>
+        {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div>{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </form>
+    </div>
+  </main>
+
+</body>
+</html>

@@ -136,6 +136,13 @@ body {
 	margin-top: 18px;
 }
 
+.account-grid {
+	display: grid;
+	grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+}
+
 .stat-card {
 	background: #f9fafc;
 	border-radius: 16px;
@@ -176,6 +183,17 @@ body {
 	background: #f3f4f6;
 	color: #111;
 	text-decoration: none;
+}
+
+.btn-danger {
+	background: #d0342c;
+	color: #fff;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
 }
 
 .messages {
@@ -381,6 +399,15 @@ table {
 	min-width: 740px;
 }
 
+.compact-table {
+	min-width: 520px;
+}
+
+.compact-table th,
+.compact-table td {
+	padding: 14px 12px;
+}
+
 th,
 td {
 	text-align: left;
@@ -409,7 +436,12 @@ tbody tr:hover {
 	gap: 10px;
 }
 
-.actions a {
+.actions form {
+	margin: 0;
+}
+
+.actions a,
+.actions button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -420,13 +452,18 @@ tbody tr:hover {
 	color: #444;
 	text-decoration: none;
 	font-size: 16px;
+	border: 0;
+	cursor: pointer;
+	font: inherit;
 }
 
-.actions a:hover {
+.actions a:hover,
+.actions button:hover {
 	background: #e8edf6;
 }
 
-.actions a.delete {
+.actions a.delete,
+.actions button.delete {
 	color: #d0342c;
 }
 
@@ -447,6 +484,16 @@ tbody tr:hover {
 	padding: 10px 14px;
 	cursor: pointer;
 	transition: background .2s, border-color .2s;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 42px;
+}
+
+.page:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 .page.active {
@@ -568,4 +615,10 @@ tbody tr:hover {
 
 .form-actions .btn {
 	min-width: 160px;
+}
+
+@media (max-width: 900px) {
+	.account-grid {
+		grid-template-columns: 1fr;
+	}
 }

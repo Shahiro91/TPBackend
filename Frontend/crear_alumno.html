@@ -83,24 +83,36 @@
             <form method="post" class="form-card">
                 {% csrf_token %}
 
+                {% if form.non_field_errors %}
+                    <div class="messages error">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="form-group">
-                    <label for="nombre">Nombre</label>
-                    <input type="text" id="nombre" name="nombre" value="{{ nombre|default:'' }}" required>
+                    {{ form.nombre.label_tag }}
+                    {{ form.nombre }}
+                    {{ form.nombre.errors }}
                 </div>
 
                 <div class="form-group">
-                    <label for="apellido">Apellido</label>
-                    <input type="text" id="apellido" name="apellido" value="{{ apellido|default:'' }}" required>
+                    {{ form.apellido.label_tag }}
+                    {{ form.apellido }}
+                    {{ form.apellido.errors }}
                 </div>
 
                 <div class="form-group">
-                    <label for="DNI">DNI</label>
-                    <input type="text" id="DNI" name="DNI" value="{{ DNI|default:'' }}" required>
+                    {{ form.DNI.label_tag }}
+                    {{ form.DNI }}
+                    {{ form.DNI.errors }}
                 </div>
 
                 <div class="form-group">
-                    <label for="MontoDeuda">Deuda (en pesos)</label>
-                    <input type="number" id="MontoDeuda" name="MontoDeuda" value="{{ MontoDeuda|default:'0' }}" min="0" step="0.01" placeholder="Ej: 15000.00">
+                    {{ form.MontoDeuda.label_tag }}
+                    {{ form.MontoDeuda }}
+                    {{ form.MontoDeuda.errors }}
                 </div>
 
                 <div class="form-actions">

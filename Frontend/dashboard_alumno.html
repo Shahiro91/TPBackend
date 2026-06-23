@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Center GYM - Mi Panel</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">CENTER GYM</div>
+        <div class="nav">
+            <a href="{% url 'alumno:dashboard' alumno.id %}" class="active">Mi Panel</a>
+            <a href="{% url 'alumno:mis_clases' alumno.id %}">Mis Clases</a>
+            <a href="{% url 'alumno:mis_reclamos' alumno.id %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:crear_reclamo' alumno.id %}">Nuevo Reclamo</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h1>👋 ¡Bienvenido, {{ alumno.nombre }} {{ alumno.apellido }}!</h1>
+            <p style="color: #888; margin-bottom: 24px;">Este es tu panel de control. Aquí podés ver un resumen de tu actividad en Center GYM.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 24px 0;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0; color: #888; font-size: 14px;">📚 Clases asignadas</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #000000; margin: 8px 0;">{{ total_clases }}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0; color: #888; font-size: 14px;">📝 Reclamos enviados</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #000000; margin: 8px 0;">{{ total_reclamos }}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0; color: #888; font-size: 14px;">🏋️ Ingresos al gimnasio</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #000000; margin: 8px 0;">{{ alumno.Ingresos }}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0; color: #888; font-size: 14px;">💰 Deuda actual</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #000000; margin: 8px 0;">${{ alumno.MontoDeuda }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-footer">
+            <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+        </div>
+    </div>
+</body>
+</html>

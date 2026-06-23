@@ -11,15 +11,17 @@
     <div class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="nav">
+            <a href="{% url 'alumno:dashboard' alumno.id %}">Mi Panel</a>
             <a href="{% url 'alumno:mis_clases' alumno.id %}">Mis Clases</a>
             <a href="{% url 'alumno:mis_reclamos' alumno.id %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:crear_reclamo' alumno.id %}" class="active">Nuevo Reclamo</a>
         </div>
     </div>
 
     <div class="container">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <h2 style="margin:0">➕ NUEVO RECLAMO</h2>
+                <h2>NUEVO RECLAMO</h2>
                 <div class="muted">Alumno: {{ alumno.nombre }} {{ alumno.apellido }}</div>
             </div>
 
@@ -41,12 +43,19 @@
                 </div>
                 
                 <div style="display:flex; gap:12px;">
-                    <button type="submit" class="btn" style="background:#ff8a00; color:white; border:none; cursor:pointer;">📨 Enviar Reclamo</button>
+                    <button type="submit" class="btn" style="background:#ff8a00; color:white; border:none; cursor:pointer;">Enviar Reclamo</button>
                     <a href="{% url 'alumno:mis_reclamos' alumno.id %}" class="btn" style="background:#6c757d; color:white; text-decoration:none;">Cancelar</a>
                 </div>
             </form>
+
+            <div style="margin-top:20px;">
+                <a href="{% url 'alumno:dashboard' alumno.id %}" class="btn" style="background:#6c757d;">← Volver</a>
+            </div>
         </div>
-        <img class="logo-footer" src="/static/LogoAppGym.png" alt="Logo Center GYM">
+
+        <div class="app-footer">
+            <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+        </div>
     </div>
 </body>
 </html>

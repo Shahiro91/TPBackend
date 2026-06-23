@@ -304,7 +304,7 @@
         </section>
     </main>
 
-    <div id="claseFormModal" class="modal form-modal" style="display: {% if show_clase_form %}flex{% else %}none{% endif %};">
+   <div id="claseFormModal" class="modal form-modal {% if show_clase_form %}show{% endif %}">
         <div class="modal-content">
             <h2 class="modal-title" id="claseFormTitle">{% if clase_edit_id %}Editar Clase{% else %}Nueva Clase{% endif %}</h2>
             <form method="post" class="form-card" id="claseForm">
@@ -331,7 +331,7 @@
         </div>
     </div>
 
-    <div id="profesorFormModal" class="modal form-modal" style="display: {% if show_profesor_form %}flex{% else %}none{% endif %};">
+    <div id="profesorFormModal" class="modal form-modal {% if show_profesor_form %}show{% endif %}">
         <div class="modal-content">
             <h2 class="modal-title" id="profesorFormTitle">{% if profesor_edit_id %}Editar Profesor{% else %}Nuevo Profesor{% endif %}</h2>
             <form method="post" class="form-card" id="profesorForm">
@@ -366,7 +366,7 @@
         </div>
     </div>
 
-    <div id="planFormModal" class="modal form-modal" style="display: {% if show_plan_form %}flex{% else %}none{% endif %};">
+    <div id="planFormModal" class="modal form-modal {% if show_plan_form %}show{% endif %}">
         <div class="modal-content">
             <h2 class="modal-title" id="planFormTitle">{% if plan_edit_id %}Editar Plan{% else %}Nuevo Plan{% endif %}</h2>
             <form method="post" class="form-card" id="planForm">

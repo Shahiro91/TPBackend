@@ -1,11 +1,41 @@
+import re
+import unicodedata
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
+from accounts.decorators import admin_required, alumno_required
+from Alumno.forms import AlumnoCreateForm
 from Alumno.models import Alumno
 from Clase.models import Clase
 from Plan.models import Plan
 from Profesor.models import Profesor
 from Reclamos.models import Reclamos
+from django.core.paginator import Paginator
+
+User = get_user_model()
+
+def normalize_name(value):
+    value = unicodedata.normalize('NFKD', value)
+    value = value.encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^a-zA-Z0-9]+', '.', value).strip('.')
+    return value.lower()
+
+
+def generate_unique_email(nombre, apellido):
+    base = f"{normalize_name(nombre)}.{normalize_name(apellido)}"
+    email = f"{base}@centergym.com"
+    suffix = 0
+    while User.objects.filter(email=email).exists():
+        suffix += 1
+        email = f"{base}{suffix}@centergym.com"
+    return email
+
+
+ALUMNOS_POR_PAGINA = 6
 
 
 def lista_alumnos(request):
@@ -20,47 +50,60 @@ def lista_alumnos(request):
 
     return render(request, 'listaAlumnos.html', {'alumnos': alumnos, 'q': q})
 
+@login_required(login_url='home')
+@alumno_required
+def dashboard_alumno(request, alumno_id):
+    alumno = get_object_or_404(Alumno, id=alumno_id)
+    # Aquí puedes calcular las clases asignadas si lo necesitas en el futuro
+    total_clases = alumno.clases.count() 
+    
+    return render(request, 'dashboard_alumno.html', {
+        'alumno': alumno,
+        'total_clases': total_clases,
+    })
 
+@login_required(login_url='home')
+@admin_required
 def crear_alumno(request):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        dni = request.POST.get('DNI', '').strip()
-        monto_deuda = request.POST.get('MontoDeuda', '0').strip() or '0'
+        form = AlumnoCreateForm(request.POST)
+        if form.is_valid():
+            nombre = form.cleaned_data['nombre']
+            apellido = form.cleaned_data['apellido']
+            email = generate_unique_email(nombre, apellido)
 
-        if not nombre or not apellido or not dni:
-            messages.error(request, 'Nombre, apellido y DNI son obligatorios.')
-            return render(request, 'crear_alumno.html', {
-                'nombre': nombre,
-                'apellido': apellido,
-                'DNI': dni,
-                'MontoDeuda': monto_deuda,
-            })
+            try:
+                with transaction.atomic():
+                    usuario = User.objects.create_user(
+                        email=email,
+                        password='alumno',
+                        role=User.ALUMNO,
+                        first_name=nombre,
+                        last_name=apellido,
+                    )
 
-        try:
-            dni_int = int(dni)
-            monto_deuda_decimal = float(monto_deuda)
-        except ValueError:
-            messages.error(request, 'DNI y deuda deben ser números válidos.')
-            return render(request, 'crear_alumno.html', {
-                'nombre': nombre,
-                'apellido': apellido,
-                'DNI': dni,
-                'MontoDeuda': monto_deuda,
-            })
+                    alumno = form.save()
+                    usuario.alumno = alumno
+                    usuario.save()
 
-        Alumno.objects.create(
-            nombre=nombre,
-            apellido=apellido,
-            DNI=dni_int,
-            MontoDeuda=monto_deuda_decimal,
-        )
-        messages.success(request, 'Alumno creado correctamente.')
-        return redirect('admin_panel')
+                messages.success(
+                    request,
+                    f'Alumno creado correctamente. Email: {email} / Contraseña inicial: alumno'
+                )
+                return redirect('admin_panel')
+            except Exception as exc:
+                messages.error(request, 'Error al crear el alumno. Por favor revise los datos e intente nuevamente.')
+                form.add_error(None, str(exc))
+        else:
+            messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = AlumnoCreateForm()
 
-    return render(request, 'crear_alumno.html')
+    return render(request, 'crear_alumno.html', {'form': form})
 
 
+@login_required(login_url='home')
+@admin_required
 def admin_panel(request):
     active_tab = request.GET.get('tab', 'clientes')
     show_plan_form = False
@@ -72,11 +115,51 @@ def admin_panel(request):
     show_profesor_form = False
     profesor_form = {'clases_ids': []}
     profesor_edit_id = None
+    show_alumno_form = False
+    alumno_form = {'clases_ids': []}
+    alumno_edit_id = None
 
     if request.method == 'POST':
         action = request.POST.get('action', '')
 
-        if action in ('crear_plan', 'editar_plan'):
+        if action == 'editar_alumno':
+            active_tab = 'clientes'
+            show_alumno_form = True
+            alumno_edit_id = request.POST.get('alumno_id') or None
+            nombre = request.POST.get('nombre', '').strip()
+            apellido = request.POST.get('apellido', '').strip()
+            dni = request.POST.get('DNI', '').strip()
+            monto_deuda = request.POST.get('MontoDeuda', '0').strip() or '0'
+            clases_ids = request.POST.getlist('clases')
+            alumno_form = {
+                'nombre': nombre,
+                'apellido': apellido,
+                'DNI': dni,
+                'MontoDeuda': monto_deuda,
+                'clases_ids': [int(c) for c in clases_ids if c.isdigit()],
+            }
+
+            if not nombre or not apellido or not dni:
+                messages.error(request, 'Nombre, apellido y DNI son obligatorios.')
+            else:
+                try:
+                    dni_int = int(dni)
+                    monto_deuda_decimal = float(monto_deuda)
+                except ValueError:
+                    messages.error(request, 'DNI y deuda deben ser números válidos.')
+                else:
+                    if alumno_edit_id:
+                        alumno = get_object_or_404(Alumno, pk=alumno_edit_id)
+                        alumno.nombre = nombre
+                        alumno.apellido = apellido
+                        alumno.DNI = dni_int
+                        alumno.MontoDeuda = monto_deuda_decimal
+                        alumno.save()
+                        alumno.clases.set(alumno_form['clases_ids'])
+                        messages.success(request, 'Cliente actualizado correctamente.')
+                        return redirect(f"{request.path}?tab=clientes")
+
+        elif action in ('crear_plan', 'editar_plan'):
             active_tab = 'planes'
             show_plan_form = True
             plan_edit_id = request.POST.get('plan_id') or None
@@ -141,6 +224,16 @@ def admin_panel(request):
                     messages.success(request, 'Clase creada correctamente.')
                 return redirect(f"{request.path}?tab=clases")
 
+        elif action == 'eliminar_clase':
+            active_tab = 'clases'
+            clase_id = request.POST.get('clase_id')
+            if clase_id:
+                clase = get_object_or_404(Clase, pk=clase_id)
+                nombre = clase.nombre
+                clase.delete()
+                messages.success(request, f'Clase "{nombre}" eliminada correctamente.')
+            return redirect(f"{request.path}?tab=clases")
+
         elif action in ('crear_profesor', 'editar_profesor'):
             active_tab = 'profesores'
             show_profesor_form = True
@@ -171,15 +264,16 @@ def admin_panel(request):
                 return redirect(f"{request.path}?tab=profesores")
 
     q_alumnos = request.GET.get('q', '').strip()
-    alumnos = Alumno.objects.prefetch_related('clases')
+    alumnos_qs = Alumno.objects.prefetch_related('clases')
 
     if q_alumnos:
         filtros = Q(nombre__icontains=q_alumnos) | Q(apellido__icontains=q_alumnos)
         if q_alumnos.isdigit():
             filtros |= Q(DNI=int(q_alumnos))
-        alumnos = alumnos.filter(filtros)
+        alumnos_qs = alumnos_qs.filter(filtros)
 
-    alumnos = alumnos.all()
+    alumnos_paginator = Paginator(alumnos_qs, ALUMNOS_POR_PAGINA)
+    alumnos = alumnos_paginator.get_page(request.GET.get('page'))
 
     clases = Clase.objects.prefetch_related('alumnos').all()
     profesores = Profesor.objects.prefetch_related('clases').all()
@@ -188,6 +282,7 @@ def admin_panel(request):
 
     context = {
         'alumnos': alumnos,
+        'alumnos_total': alumnos_paginator.count,
         'clases': clases,
         'profesores': profesores,
         'planes': planes,
@@ -203,10 +298,15 @@ def admin_panel(request):
         'show_profesor_form': show_profesor_form,
         'profesor_form': profesor_form,
         'profesor_edit_id': profesor_edit_id,
+        'show_alumno_form': show_alumno_form,
+        'alumno_form': alumno_form,
+        'alumno_edit_id': alumno_edit_id,
     }
 
     return render(request, 'admin.html', context)
 
+@login_required(login_url='home')
+@alumno_required
 def mis_clases(request, alumno_id):
     alumno = get_object_or_404(Alumno, id=alumno_id)
     clases = alumno.clases.all()
@@ -221,6 +321,8 @@ def mis_clases(request, alumno_id):
     })
 
 
+@login_required(login_url='home')
+@alumno_required
 def mis_reclamos(request, alumno_id):
     alumno = get_object_or_404(Alumno, id=alumno_id)
     reclamos = alumno.reclamos.all().order_by('-fecha_reclamo')
@@ -231,6 +333,8 @@ def mis_reclamos(request, alumno_id):
     })
 
 
+@login_required(login_url='home')
+@alumno_required
 def crear_reclamo(request, alumno_id):
     alumno = get_object_or_404(Alumno, id=alumno_id)
 

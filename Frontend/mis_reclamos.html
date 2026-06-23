@@ -11,19 +11,21 @@
     <div class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="nav">
+            <a href="{% url 'alumno:dashboard' alumno.id %}">Mi Panel</a>
             <a href="{% url 'alumno:mis_clases' alumno.id %}">Mis Clases</a>
-            <a href="{% url 'alumno:mis_reclamos' alumno.id %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:mis_reclamos' alumno.id %}" class="active">Mis Reclamos</a>
+            <a href="{% url 'alumno:crear_reclamo' alumno.id %}">Nuevo Reclamo</a>
         </div>
     </div>
 
     <div class="container">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-                <h2 style="margin:0">📝 MIS RECLAMOS</h2>
-                <a class="btn" href="{% url 'alumno:crear_reclamo' alumno.id %}" style="background:#ff8a00; color:white;">+ Nuevo Reclamo</a>
+                <h2>MIS RECLAMOS</h2>
+                <a class="btn" href="{% url 'alumno:crear_reclamo' alumno.id %}" style="background:#ff8a00; color:#fff;">+ Nuevo Reclamo</a>
             </div>
 
-            <div style="margin-bottom:15px;">
+            <div style="margin-bottom:12px;">
                 <div class="muted">Alumno: {{ alumno.nombre }} {{ alumno.apellido }}</div>
             </div>
 
@@ -38,10 +40,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Contenido</th>
-                        <th>Estado</th>
-                        <th>Fecha Resolución</th>
+                        <th>FECHA</th>
+                        <th>CONTENIDO</th>
+                        <th>ESTADO</th>
+                        <th>FECHA RESOLUCIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,8 +67,15 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <div style="margin-top:20px;">
+                <a href="{% url 'alumno:dashboard' alumno.id %}" class="btn" style="background:#6c757d;">← Volver</a>
+            </div>
         </div>
-        <img class="logo-footer" src="/static/LogoAppGym.png" alt="Logo Center GYM">
+
+        <div class="app-footer">
+            <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+        </div>
     </div>
 </body>
 </html>
