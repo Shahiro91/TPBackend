@@ -2,87 +2,130 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Hace que la página sea responsive en dispositivos móviles -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Center GYM - Profesores</title>
+
+    <!-- Cargamos la etiqueta de Django para poder usar archivos estáticos -->
     {% load static %}
-    <!-- Cargamos el archivo de estilos CSS del proyecto -->
+
+    <!-- Cargamos el archivo de estilos CSS global del proyecto -->
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+
+    <style>
+        /* Fuerza las letras del nav a ser blancas, sin subrayado */
+        .main-nav a {
+            color: black !important;
+            text-decoration: none;
+        }
+        /* Al pasar el mouse por encima, cambia al naranja del gym */
+        .main-nav a:hover {
+            color: #ff8a00 !important;
+        }
+        /* Footer fijo pegado al fondo de la pantalla */
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            text-align: center;
+            padding: 10px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+        /* Tamaño y opacidad del logo en el footer */
+        .app-footer img {
+            height: 50px;
+            opacity: 0.85;
+        }
+    </style>
 </head>
-<body>
-    <!-- Barra de navegación con las pestañas del sistema -->
-    <div class="topbar">
+
+<!-- Clase que aplica estilos específicos para páginas de profesor -->
+<body class="profesor-page">
+
+    <!-- Barra superior con el nombre del gimnasio -->
+    <header class="topbar">
         <div class="brand">CENTER GYM</div>
-        <div class="nav">
-            <a href="#">Dashboard</a>
-            <a href="{% url 'alumno:lista_alumnos' %}">Clientes</a>
-            <a href="#">Clases</a>
-            <!-- Pestaña activa en blanco porque estamos en Profesores -->
-            <a href="{% url 'profesor:lista_profesores' %}" style="color:#fff">Profesores</a>
-            <a href="#">Planes</a>
-            <a href="#">Reclamos</a>
-        </div>
-    </div>
+        <!-- Espacio reservado para acciones futuras en el topbar (ej: logout) -->
+        <div class="topbar-actions"></div>
+    </header>
 
-    <div class="container">
-        <div class="card">
-            <!-- Encabezado de la sección -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
-                <h2>PROFESORES</h2>
+    <!-- Barra de navegación principal con las secciones del sistema -->
+    <nav class="main-nav profesor-nav">
+        <!-- Esta sección está activa porque estamos en la lista de profesores -->
+        <a href="{% url 'profesor:lista_profesores' %}" class="nav-link active">PROFESORES</a>
+    </nav>
+
+    <!-- Contenido principal de la página -->
+    <main class="page-content">
+
+        <!-- Encabezado de la sección con título y contador -->
+        <section class="page-header">
+            <h1>PROFESORES</h1>
+            <!-- Muestra la cantidad total de profesores usando el filtro length de Django -->
+            <div class="muted">{{ profesores|length }} profesores</div>
+        </section>
+
+        <!-- Tarjeta principal que contiene el buscador y la tabla -->
+        <section class="card">
+
+            <!-- Controles superiores: buscador de profesores -->
+            <div class="card-controls">
+                <!-- Formulario de búsqueda por GET: el texto queda visible en la URL -->
+                <form method="GET" class="search" action="">
+                    <!-- Campo de texto; conserva el valor buscado anteriormente -->
+                    <input type="text" name="q" placeholder="Buscar profesor..." value="{{ request.GET.q }}">
+                    <button type="submit" class="btn">Buscar</button>
+                </form>
             </div>
 
-            <!-- Barra de búsqueda y contador de profesores -->
-            <div class="controls">
-                <div class="search">
-                    <!-- Formulario de búsqueda por nombre, se envía por GET -->
-                    <form method="GET" style="display:flex; gap:8px; margin:0;">
-                        <!-- Mantiene el texto buscado en el input después de buscar -->
-                        <input type="text" name="q" placeholder="Buscar profesor..." value="{{ request.GET.q }}">
-                        <button type="submit" class="btn" style="border:none; cursor:pointer;">Buscar</button>
-                    </form>
-                </div>
-                <!-- Muestra la cantidad total de profesores encontrados -->
-                <div class="muted">{{ profesores|length }} profesores</div>
+            <!-- Contenedor con scroll horizontal para la tabla en pantallas chicas -->
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                            <th>APELLIDO</th>
+                            <th>CANTIDAD DE CLASES</th>
+                            <th>LISTA DE CLASES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteramos sobre cada profesor traído desde la vista -->
+                        {% for profesor in profesores %}
+                        <tr>
+                            <td>{{ profesor.nombre }}</td>
+                            <td>{{ profesor.apellido }}</td>
+                            <!-- Cuenta cuántas clases tiene asignadas el profesor -->
+                            <td>{{ profesor.clases.count }}</td>
+                            <td class="actions">
+                                <!-- Ícono de ojo (SVG) que lleva al detalle de clases del profesor -->
+                                <a href="{% url 'profesor:mis_clases' profesor.id %}" title="Ver clases">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Si no hay profesores registrados (lista vacía), muestra este mensaje -->
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center; color:#888; padding:40px;">No hay profesores registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+        </section>
 
-            <!-- Tabla con el listado de profesores -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>NOMBRE</th>
-                        <th>APELLIDO</th>
-                        <th>CANTIDAD DE CLASES</th>
-                        <th>LISTA DE CLASES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Iteramos sobre cada profesor traído desde la vista -->
-                    {% for profesor in profesores %}
-                    <tr>
-                        <td>{{ profesor.nombre }}</td>
-                        <td>{{ profesor.apellido }}</td>
-                        <!-- Cuenta cuántas clases tiene asignadas el profesor -->
-                        <td>{{ profesor.clases.count }}</td>
-                        <td class="actions">
-                            <!-- Ícono de ojo que lleva al detalle de clases del profesor -->
-                            <a href="{% url 'profesor:mis_clases' profesor.id %}" title="Ver clases">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            </a>
-                        </td>
-                    </tr>
-                    <!-- Si no hay profesores registrados muestra este mensaje -->
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" style="text-align:center; color:#888; padding:40px;">No hay profesores registrados.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Logo fijo en el pie de página -->
-        <div class="logo-footer">
+        <!-- Footer con el logo del gimnasio al pie de la página -->
+        <footer class="app-footer sticky-footer">
+            <!-- Logo cargado desde archivos estáticos del proyecto -->
             <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
-        </div>
-    </div>
+        </footer>
+
+    </main>
 </body>
 </html>

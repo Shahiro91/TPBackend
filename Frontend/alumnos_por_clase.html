@@ -2,88 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Hace que la página sea responsive en dispositivos móviles -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Center GYM - Alumnos por Clase</title>
+
+    <!-- Cargamos la etiqueta de Django para poder usar archivos estáticos -->
     {% load static %}
-    <!-- Cargamos el archivo de estilos CSS del proyecto -->
+
+    <!-- Cargamos el archivo de estilos CSS global del proyecto -->
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+
+    <style>
+        /* Fuerza las letras del nav a ser blancas, sin subrayado */
+        .main-nav a {
+            color: black !important;
+            text-decoration: none;
+        }
+        /* Al pasar el mouse por encima, cambia al naranja del gym */
+        .main-nav a:hover {
+            color: #ff8a00 !important;
+        }
+        /* Footer fijo pegado al fondo de la pantalla */
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            text-align: center;
+            padding: 10px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+        /* Tamaño y opacidad del logo en el footer */
+        .app-footer img {
+            height: 50px;
+            opacity: 0.85;
+        }
+    </style>
 </head>
-<body>
-    <!-- Barra de navegación superior con las pestañas del sistema -->
-    <div class="topbar">
+
+<!-- Clase que aplica estilos específicos para páginas de profesor -->
+<body class="profesor-page">
+
+    <!-- Barra superior con el nombre del gimnasio -->
+    <header class="topbar">
         <div class="brand">CENTER GYM</div>
-        <div class="nav">
-            <a href="#">Dashboard</a>
-            <a href="{% url 'alumno:lista_alumnos' %}">Clientes</a>
-            <a href="#">Clases</a>
-            <!-- Pestaña activa en blanco porque seguimos dentro de la sección Profesores -->
-            <a href="{% url 'profesor:lista_profesores' %}" style="color:#fff">Profesores</a>
-            <a href="#">Planes</a>
-            <a href="#">Reclamos</a>
-        </div>
-    </div>
+        <!-- Espacio reservado para acciones futuras en el topbar (ej: logout) -->
+        <div class="topbar-actions"></div>
+    </header>
 
-    <div class="container">
-        <div class="card">
-            <!-- Encabezado: muestra el nombre de la clase en mayúsculas y sus datos -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
-                <!-- |upper convierte el nombre de la clase a mayúsculas -->
-                <h2>{{ clase.nombre|upper }}</h2>
-                <!-- Muestra los días y el horario de la clase separados por | -->
-                <div class="muted">{{ clase.dias }} | {{ clase.horario }}</div>
-            </div>
+    <!-- Barra de navegación principal con las secciones del sistema -->
+    <nav class="main-nav profesor-nav">
+        <!-- Esta sección está activa porque venimos desde la lista de profesores -->
+        <a href="{% url 'profesor:lista_profesores' %}" class="nav-link active">PROFESORES</a>
+    </nav>
 
-            <!-- Barra de búsqueda y contador de alumnos -->
-            <div class="controls">
-                <div class="search">
-                    <!-- Formulario de búsqueda por nombre de alumno, se envía por GET -->
-                    <form method="GET" style="display:flex; gap:8px; margin:0;">
-                        <!-- Mantiene el texto buscado en el input después de buscar -->
-                        <input type="text" name="q" placeholder="Buscar alumno..." value="{{ request.GET.q }}">
-                        <button type="submit" class="btn" style="border:none; cursor:pointer;">Buscar</button>
-                    </form>
-                </div>
-                <!-- Muestra la cantidad de alumnos encontrados en la clase -->
+    <!-- Contenido principal de la página -->
+    <main class="page-content">
+
+        <!-- Encabezado con el nombre de la clase y su horario -->
+        <section class="page-header">
+            <!-- Muestra el nombre de la clase en mayúsculas usando el filtro upper de Django -->
+            <h1>{{ clase.nombre|upper }}</h1>
+            <!-- Muestra los días y horario de la clase separados por un pipe -->
+            <div class="muted">{{ clase.dias }} | {{ clase.horario }}</div>
+        </section>
+
+        <!-- Tarjeta principal con el buscador y la tabla de alumnos -->
+        <section class="card">
+
+            <!-- Controles superiores: buscador y contador de alumnos -->
+            <div class="card-controls">
+                <!-- Formulario de búsqueda por GET: el texto queda visible en la URL -->
+                <form method="GET" class="search" action="">
+                    <!-- Campo de texto; conserva el valor buscado anteriormente -->
+                    <input type="text" name="q" placeholder="Buscar alumno..." value="{{ request.GET.q }}">
+                    <button type="submit" class="btn">Buscar</button>
+                </form>
+                <!-- Muestra la cantidad de alumnos usando el filtro length de Django -->
                 <div class="muted">{{ alumnos|length }} alumnos</div>
             </div>
 
-            <!-- Tabla con el listado de alumnos de la clase -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>NOMBRE</th>
-                        <th>APELLIDO</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Iteramos sobre cada alumno inscripto en la clase -->
-                    {% for alumno in alumnos %}
-                    <tr>
-                        <td>{{ alumno.nombre }}</td>
-                        <td>{{ alumno.apellido }}</td>
-                    </tr>
-                    <!-- Si la clase no tiene alumnos muestra este mensaje -->
-                    {% empty %}
-                    <tr>
-                        <td colspan="2" style="text-align:center; color:#888; padding:40px;">No hay alumnos en esta clase.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <!-- Contenedor con scroll horizontal para la tabla en pantallas chicas -->
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                            <th>APELLIDO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteramos sobre cada alumno inscripto en la clase -->
+                        {% for alumno in alumnos %}
+                        <tr>
+                            <td>{{ alumno.nombre }}</td>
+                            <td>{{ alumno.apellido }}</td>
+                        </tr>
+                        <!-- Si la clase no tiene alumnos inscriptos, muestra este mensaje -->
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" style="text-align:center; color:#888; padding:40px;">No hay alumnos en esta clase.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-            <!-- Botón para volver a las clases del profesor -->
-            <div style="margin-top:20px;">
-                <!-- Lleva de vuelta a la vista mis_clases del mismo profesor -->
-                <a href="{% url 'profesor:mis_clases' profesor.id %}" class="btn" style="background:#6c757d;">← Volver</a>
+                <!-- Botón para volver a las clases del profesor -->
+                <!-- La URL incluye el id del profesor para volver a su listado específico -->
+                <div style="margin-top:20px;">
+                    <a href="{% url 'profesor:mis_clases' profesor.id %}" class="btn btn-primary">← Volver</a>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Logo fijo en el pie de página -->
-        <div class="logo-footer">
+        <!-- Footer con el logo del gimnasio fijo al fondo de la pantalla -->
+        <footer class="app-footer sticky-footer">
+            <!-- Logo cargado desde archivos estáticos del proyecto -->
             <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
-        </div>
-    </div>
+        </footer>
+
+    </main>
 </body>
 </html>
-
-

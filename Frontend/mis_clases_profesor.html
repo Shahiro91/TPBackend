@@ -2,83 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Hace que la página sea responsive en dispositivos móviles -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Center GYM - Mis Clases</title>
+
+    <!-- Cargamos la etiqueta de Django para poder usar archivos estáticos -->
     {% load static %}
-    <!-- Cargamos del archivo al proyecto -->
+
+    <!-- Cargamos el archivo de estilos CSS global del proyecto -->
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+
+    <style>
+        /* Fuerza las letras del nav a ser blancas, sin subrayado */
+        .main-nav a {
+            color: black !important;
+            text-decoration: none;
+        }
+        /* Al pasar el mouse por encima, cambia al naranja del gym */
+        .main-nav a:hover {
+            color: #ff8a00 !important;
+        }
+        /* Footer fijo pegado al fondo de la pantalla */
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            text-align: center;
+            padding: 10px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+        /* Tamaño y opacidad del logo en el footer */
+        .app-footer img {
+            height: 50px;
+            opacity: 0.85;
+        }
+    </style>
 </head>
-<body>
-    <!-- Barra superior con el nombre del profesor logueado -->
-    <!-- Barra de navegación superior con las pestañas del sistema -->
-    <div class="topbar">
+
+<!-- Clase que aplica estilos específicos para páginas de profesor -->
+<body class="profesor-page">
+
+    <!-- Barra superior con el nombre del gimnasio -->
+    <header class="topbar">
         <div class="brand">CENTER GYM</div>
-        <div class="nav">
-            <a href="#">Dashboard</a>
-            <a href="{% url 'alumno:lista_alumnos' %}">Clientes</a>
-            <a href="#">Clases</a>
-            <!-- Pestaña activa en blanco porque estamos en Profesores -->
-            <a href="{% url 'profesor:lista_profesores' %}" style="color:#fff">Profesores</a>
-            <a href="#">Planes</a>
-            <a href="#">Reclamos</a>
-        </div>
-    </div>
+        <!-- Espacio reservado para acciones futuras en el topbar (ej: logout) -->
+        <div class="topbar-actions"></div>
+    </header>
 
-    <div class="container">
-        <div class="card">
-            <!-- Encabezado con info de las clases -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
-                <h2>MIS CLASES</h2>
-                <!-- Muestra cuántas clases tiene asignadas el profesor -->
-                <div class="muted">{{ clases|length }} clases asignadas</div>
+    <!-- Barra de navegación principal con las secciones del sistema -->
+    <nav class="main-nav profesor-nav">
+        <!-- Esta sección está activa porque venimos desde la lista de profesores -->
+        <a href="{% url 'profesor:lista_profesores' %}" class="nav-link active">PROFESORES</a>
+    </nav>
+
+    <!-- Contenido principal de la página -->
+    <main class="page-content">
+
+        <!-- Encabezado de la sección con título y contador de clases -->
+        <section class="page-header">
+            <h1>MIS CLASES</h1>
+            <!-- Muestra cuántas clases tiene asignadas el profesor -->
+            <div class="muted">{{ clases|length }} clases asignadas</div>
+        </section>
+
+        <!-- Tarjeta principal que contiene la tabla de clases -->
+        <section class="card">
+
+            <!-- Contenedor con scroll horizontal para la tabla en pantallas chicas -->
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                            <th>DÍAS</th>
+                            <th>HORARIO</th>
+                            <th>CANTIDAD DE ALUMNOS</th>
+                            <th>LISTA DE ALUMNOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteramos sobre cada clase asignada al profesor -->
+                        {% for clase in clases %}
+                        <tr>
+                            <td><strong>{{ clase.nombre }}</strong></td>
+                            <td>{{ clase.dias }}</td>
+                            <td>{{ clase.horario }}</td>
+                            <!-- Cuenta la cantidad de alumnos inscriptos en esa clase -->
+                            <td>{{ clase.alumnos.count }}</td>
+                            <td class="actions">
+                                <!-- Ícono de ojo (SVG) que lleva al listado de alumnos de esta clase -->
+                                <a href="{% url 'profesor:alumnos_por_clase' profesor.id clase.id %}" title="Ver alumnos">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Si el profesor no tiene clases asignadas, muestra este mensaje -->
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#888; padding:40px;">No tenés clases asignadas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Botón para volver a la lista general de profesores -->
+                <div style="margin-top:20px;">
+                    <a href="{% url 'profesor:lista_profesores' %}" class="btn btn-primary">← Volver</a>
+                </div>
             </div>
+        </section>
 
-            <!-- Tabla con la info de las clases del profesor -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>NOMBRE</th>
-                        <th>DÍAS</th>
-                        <th>HORARIO</th>
-                        <th>CANTIDAD DE ALUMNOS</th>
-                        <th>LISTA DE ALUMNOS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Sobre cada clase asignada al profesor -->
-                    {% for clase in clases %}
-                    <tr>
-                        <td><strong>{{ clase.nombre }}</strong></td>
-                        <td>{{ clase.dias }}</td>
-                        <td>{{ clase.horario }}</td>
-                        <!-- Cuenta la cantidad de alumnos inscriptos en la clase -->
-                        <td>{{ clase.alumnos.count }}</td>
-                        <td class="actions">
-                            <!-- Ícono de ojo que lleva al listado de alumnos de esa clase -->
-                            <a href="{% url 'profesor:alumnos_por_clase' profesor.id clase.id %}" title="Ver alumnos">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            </a>
-                        </td>
-                    </tr>
-                    <!-- Si el profesor no tiene clases asignadas muestra este mensaje -->
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" style="text-align:center; color:#888; padding:40px;">No tenés clases asignadas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <!-- Botón para volver a la lista de profesores -->
-            <div style="margin-top:20px;">
-                <a href="{% url 'profesor:lista_profesores' %}" class="btn" style="background:#6c757d;">← Volver</a>
-            </div>
-        </div>
-
-        <!-- Logo fijo en el pie de página -->
-        <div class="logo-footer">
+        <!-- Footer con el logo del gimnasio al pie de la página -->
+        <footer class="app-footer sticky-footer">
+            <!-- Logo cargado desde archivos estáticos del proyecto -->
             <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
-        </div>
-    </div>
+        </footer>
+
+    </main>
 </body>
 </html>

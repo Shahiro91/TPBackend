@@ -7,6 +7,6 @@ class Profesor(models.Model):
     clases = models.ManyToManyField('Clase.Clase', related_name='profesores', blank=True)
     
 
-    # Método que define cómo se muestra el profesor en el admin y en el shell
+    # Define cómo se muestra el profesor en el admin y en el shell
     def __str__(self):
         return f"{self.nombre} {self.apellido}"

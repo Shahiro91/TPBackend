@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from accounts.decorators import profesor_required
 from .models import Profesor
 from Clase.models import Clase
 
@@ -42,13 +41,16 @@ def lista_profesores(request):
     profesores = Profesor.objects.all()
     q = request.GET.get('q')
     if q:
-        profesores = profesores.filter(nombre__icontains=q)
+        # Filtra los profesores cuyo nombre o apellido contenga ese texto
+        profesores = profesores.filter(
+            Q(nombre__icontains=q) | Q(apellido__icontains=q)
+        )
+    # Renderiza el template enviando la lista de profesores
     return render(request, 'lista_profesores.html', {
         'profesores': profesores,
     })
 
-@login_required(login_url='home')
-@profesor_required
+
 def crear_profesor(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -68,4 +70,7 @@ def crear_profesor(request):
 
     clases = Clase.objects.all()
     return render(request, 'crear_profesor.html', {'clases': clases})
+
+	clases = Clase.objects.all()
+	return render(request, 'crear_profesor.html', {'clases': clases})
 
