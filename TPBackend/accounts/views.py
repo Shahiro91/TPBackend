@@ -17,7 +17,7 @@ def login_view(request):
             if user.role == user.ADMIN or user.is_superuser:
                 return redirect('admin_panel')
             if user.role == user.PROFESOR:
-                return redirect('profesor:profesor_home')
+                return redirect('profesor:mis_clases', profesor_id=user.profesor.id)
             if user.alumno_id:
                 return redirect('alumno:dashboard', alumno_id=user.alumno_id)
             return redirect('alumno:lista_alumnos')
@@ -35,7 +35,7 @@ def dashboard_redirect(request):
     if request.user.role == request.user.ADMIN or request.user.is_superuser:
         return redirect('admin_panel')
     if request.user.role == request.user.PROFESOR:
-        return redirect('profesor:profesor_home')
+        return redirect('profesor:mis_clases', profesor_id=request.user.profesor.id)
     if request.user.alumno_id:
         return redirect('alumno:dashboard', alumno_id=request.user.alumno_id)
     return redirect('alumno:lista_alumnos')

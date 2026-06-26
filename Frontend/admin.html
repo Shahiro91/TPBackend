@@ -11,7 +11,7 @@
     <header class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="topbar-actions">
-            <span class="user-label">Admin ▾</span>
+            <span class="user-label">Administrador</span>
             <a href="{% url 'accounts:logout' %}" class="logout-link">Cerrar</a>
         </div>
     </header>
@@ -22,6 +22,7 @@
         <a href="#" class="nav-link{% if active_tab == 'profesores' %} active{% endif %}" data-tab="profesores">PROFESORES</a>
         <a href="#" class="nav-link{% if active_tab == 'planes' %} active{% endif %}" data-tab="planes">PLANES</a>
         <a href="#" class="nav-link{% if active_tab == 'reclamos' %} active{% endif %}" data-tab="reclamos">RECLAMOS</a>
+        <a href="#" id="toggleAdministrativoFormBtn" class="nav-link" style="color: #ff8a00;">+ Nuevo Administrativo</a>
     </nav>
 
 
@@ -51,7 +52,7 @@
         <section class="tab-panel{% if active_tab == 'clientes' %} active{% endif %}" id="clientes">
             <section class="page-header">
                 <h1>CLIENTES</h1>
-                <button type="button" id="toggleAlumnoFormBtn" class="btn btn-primary">+ Nuevo Cliente</button>
+                <a href="{% url 'alumno:crear_alumno' %}" class="btn btn-primary">+ Nuevo Cliente</a>
             </section>
             <section class="card">
                 <div class="card-controls">
@@ -96,12 +97,6 @@
                                                          data-dni="{{ alumno.DNI }}"
                                                          data-montodeuda="{{ alumno.MontoDeuda }}"
                                                          data-clases="{% for clase in alumno.clases.all %}{{ clase.id }}{% if not forloop.last %},{% endif %}{% endfor %}">✏️</a>
-                                                     <form method="post" style="margin:0;">
-                                                         {% csrf_token %}
-                                                         <input type="hidden" name="action" value="eliminar_alumno">
-                                                         <input type="hidden" name="alumno_id" value="{{ alumno.id }}">
-                                                         <button type="submit" class="btn delete" title="Eliminar">×</button>
-                                                     </form>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -173,12 +168,6 @@
                                            data-nombre="{{ clase.nombre }}"
                                            data-dias="{{ clase.dias }}"
                                            data-horario="{{ clase.horario }}">✏️</a>
-                                        <form method="post" style="margin:0;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="eliminar_clase">
-                                            <input type="hidden" name="clase_id" value="{{ clase.id }}">
-                                            <button type="submit" class="btn delete" title="Eliminar">×</button>
-                                        </form>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -233,12 +222,6 @@
                                            data-nombre="{{ profesor.nombre }}"
                                            data-apellido="{{ profesor.apellido }}"
                                            data-clases="{% for c in profesor.clases.all %}{{ c.id }}{% if not forloop.last %},{% endif %}{% endfor %}">✏️</a>
-                                        <form method="post" style="margin:0;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="eliminar_profesor">
-                                            <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
-                                            <button type="submit" class="btn delete" title="Eliminar">×</button>
-                                        </form>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -289,12 +272,6 @@
                                            data-precio="{{ plan.precio }}"
                                            data-duracion="{{ plan.duracion }}"
                                            data-descripcion="{{ plan.descripcion }}">✏️</a>
-                                        <form method="post" style="margin:0;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="eliminar_plan">
-                                            <input type="hidden" name="plan_id" value="{{ plan.id }}">
-                                            <button type="submit" class="btn delete" title="Eliminar">×</button>
-                                        </form>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -327,12 +304,7 @@
                         </thead>
                         <tbody>
                             {% for reclamo in reclamos %}
-                                    <tr class="clickable-row" data-view-type="reclamo"
-                                        data-alumno="{{ reclamo.alumno }}"
-                                        data-estado="{{ reclamo.estado }}"
-                                        data-fecha="{{ reclamo.fecha_reclamo|date:'d/m/Y H:i' }}"
-                                        data-fecha-resolucion="{% if reclamo.fecha_resolucion %}{{ reclamo.fecha_resolucion|date:'d/m/Y H:i' }}{% else %}-{% endif %}"
-                                        data-contenido="{{ reclamo.contenido|escapejs }}">
+                                    <tr>
                                         <td>{{ reclamo.alumno }}</td>
                                         <td>
                                             <form method="post" class="inline-form" action="">
@@ -497,6 +469,38 @@
             </form>
         </div>
     </div>
+
+    {% if request.user.is_superuser %}
+    <div id="administrativoFormModal" class="modal form-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Crear Administrativo</h2>
+            <p style="color: #888; margin-bottom: 16px; font-size: 14px;">
+                El email se generará automáticamente: <strong>nombre.apellido@centergym.com</strong>
+            </p>
+            <form method="post" action="{% url 'crear_administrativo' %}" class="form-card" id="administrativoForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="admin-first_name">Nombre</label>
+                    <input type="text" id="admin-first_name" name="first_name" required placeholder="Nombre del administrativo">
+                </div>
+                <div class="form-group">
+                    <label for="admin-last_name">Apellido</label>
+                    <input type="text" id="admin-last_name" name="last_name" required placeholder="Apellido del administrativo">
+                </div>
+                <div class="form-group">
+                    <label for="admin-password">Contraseña</label>
+                    <input type="password" id="admin-password" name="password" required>
+                    <small style="color: #888;">Mínimo 8 caracteres.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Crear Administrativo</button>
+                    <button type="button" id="cancelAdministrativoFormBtn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
 
     <footer class="app-footer">
         <img src="{% static 'images/LogoAppGym.png' %}" alt="Logo App Gym">
@@ -687,7 +691,7 @@
 
         initEntityForm({
             modalId: 'alumnoFormModal',
-            toggleBtnId: 'toggleAlumnoFormBtn',
+            toggleBtnId: '',
             cancelBtnId: 'cancelAlumnoFormBtn',
             formId: 'alumnoForm',
             actionInputId: 'alumno-action',
@@ -709,6 +713,33 @@
                 { name: 'clases', type: 'multiselect', datasetKey: 'clases' },
             ],
         });
+
+        const adminModal = document.getElementById('administrativoFormModal');
+        const adminToggleBtn = document.getElementById('toggleAdministrativoFormBtn');
+        const adminCancelBtn = document.getElementById('cancelAdministrativoFormBtn');
+
+        if (adminToggleBtn && adminModal) {
+            adminToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                adminModal.style.display = 'flex';
+                const form = document.getElementById('administrativoForm');
+                if (form) form.reset();
+            });
+        }
+
+        if (adminCancelBtn && adminModal) {
+            adminCancelBtn.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+            });
+        }
+
+        if (adminModal) {
+            adminModal.addEventListener('click', function(e) {
+                if (e.target === adminModal) {
+                    adminModal.style.display = 'none';
+                }
+            });
+        }
 
         function openRowDetail(row) {
             const type = row.dataset.viewType;
@@ -735,14 +766,6 @@
                     { label: 'Precio', value: '$' + row.dataset.precio },
                     { label: 'Duración', value: row.dataset.duracion },
                     { label: 'Descripción', value: row.dataset.descripcion || '-' },
-                ]);
-            } else if (type === 'reclamo') {
-                showDetailModal('Detalle de Reclamo', [
-                    { label: 'Alumno', value: row.dataset.alumno },
-                    { label: 'Estado', value: row.dataset.estado },
-                    { label: 'Fecha de reclamo', value: row.dataset.fecha },
-                    { label: 'Fecha de resolución', value: row.dataset.fechaResolucion || '-' },
-                    { label: 'Contenido', value: row.dataset.contenido || '-' },
                 ]);
             } else if (type === 'alumno') {
                 const clases = row.dataset.clases ? row.dataset.clases.split('|||').filter(Boolean) : [];

@@ -17,10 +17,10 @@
     <div class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="nav">
-            <a href="{% url 'alumno:dashboard' alumno.id %}">Mi Panel</a>
-            <a href="{% url 'alumno:mis_clases' alumno.id %}">Mis Clases</a>
-            <a href="{% url 'alumno:mis_reclamos' alumno.id %}" class="active">Mis Reclamos</a>
-            <a href="{% url 'alumno:editar_perfil' alumno.id %}">Mi Perfil</a>
+            <a href="{% url 'alumno:dashboard' %}">Mi Panel</a>
+            <a href="{% url 'alumno:mis_clases' %}">Mis Clases</a>
+            <a href="{% url 'alumno:mis_reclamos' %}" class="active">Mis Reclamos</a>
+            <a href="{% url 'alumno:editar_perfil' %}">Mi Perfil</a>
             <a href="{% url 'accounts:logout' %}" class="logout-link">Cerrar</a>
         </div>
     </div>
@@ -29,7 +29,7 @@
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
                 <h2>MIS RECLAMOS</h2>
-                <a class="btn" id="openReclamoModal" href="{% url 'alumno:crear_reclamo' alumno.id %}" style="background:#ff8a00; color:#fff; text-decoration: none;">+ Nuevo Reclamo</a>
+                <a class="btn" id="openReclamoModal" href="{% url 'alumno:crear_reclamo' %}" style="background:#ff8a00; color:#fff; text-decoration: none;">+ Nuevo Reclamo</a>
             </div>
 
             <div style="margin-bottom:12px;">
@@ -80,7 +80,7 @@
         <div id="reclamoModal" class="modal form-modal" onclick="cerrarModalSiFondo(event)">
             <div class="modal-content">
                 <h2 class="modal-title">Nuevo Reclamo</h2>
-                <form method="POST" action="{% url 'alumno:crear_reclamo' alumno.id %}">
+                <form method="POST" action="{% url 'alumno:crear_reclamo' %}">
                     {% csrf_token %}
                     <div style="margin-bottom:20px; text-align:left;">
                         <label for="modal-contenido" style="display:block; margin-bottom:8px; font-weight:600; color:#111;">Descripción del reclamo</label>

@@ -38,8 +38,8 @@ def lista_alumnos(request):
 
 @login_required(login_url='home')
 @alumno_required
-def dashboard_alumno(request, alumno_id):
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+def dashboard_alumno(request):
+    alumno = request.user.alumno
     # Aquí puedes calcular las clases asignadas si lo necesitas en el futuro
     total_clases = alumno.clases.count()
     total_reclamos = alumno.reclamos.count()
@@ -399,8 +399,8 @@ def admin_panel(request):
 
 @login_required(login_url='home')
 @alumno_required
-def mis_clases(request, alumno_id):
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+def mis_clases(request):
+    alumno = request.user.alumno
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -413,7 +413,7 @@ def mis_clases(request, alumno_id):
             elif action == 'desasociar_clase':
                 alumno.clases.remove(clase)
                 messages.success(request, f'Te desafiliastes de la clase {clase.nombre}.')
-        return redirect('alumno:mis_clases', alumno_id=alumno.id)
+        return redirect('alumno:mis_clases')
 
     clases = alumno.clases.all()
     clases_disponibles = Clase.objects.exclude(alumnos=alumno)
@@ -427,8 +427,8 @@ def mis_clases(request, alumno_id):
 
 @login_required(login_url='home')
 @alumno_required
-def mis_reclamos(request, alumno_id):
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+def mis_reclamos(request):
+    alumno = request.user.alumno
     reclamos = alumno.reclamos.all().order_by('-fecha_reclamo')
 
     return render(request, 'mis_reclamos.html', {
@@ -439,8 +439,8 @@ def mis_reclamos(request, alumno_id):
 
 @login_required(login_url='home')
 @alumno_required
-def crear_reclamo(request, alumno_id):
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+def crear_reclamo(request):
+    alumno = request.user.alumno
 
     if request.method == 'POST':
         contenido = request.POST.get('contenido')
@@ -451,15 +451,15 @@ def crear_reclamo(request, alumno_id):
                 estado='Pendiente'
             )
             messages.success(request, 'Reclamo enviado correctamente.')
-            return redirect('alumno:mis_reclamos', alumno_id=alumno.id)
+            return redirect('alumno:mis_reclamos')
         else:
             messages.error(request, 'el contenido del reclamo no puede estar vacio.')
 
     return render(request, 'crear_reclamo.html', {'alumno': alumno})
 
 
-def editar_perfil(request, alumno_id):
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+def editar_perfil(request):
+    alumno = request.user.alumno
 
     if request.method == 'POST':
         action = request.POST.get('action')

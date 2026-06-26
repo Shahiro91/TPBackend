@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Center GYM - Mi Perfil</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <style>
+    .logout-link {
+        color: #ff8a00 !important;
+        font-weight: 700;
+    }
+    .perfil-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        max-width: 780px;
+        margin: 0 auto;
+    }
+    .perfil-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        margin: 0 0 16px;
+    }
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+    .field-group label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+    .field-group input {
+        padding: 11px 14px;
+        border: 1px solid #e1e6ee;
+        border-radius: 10px;
+        font-size: 15px;
+        color: #222;
+        background: #f8f9fc;
+        transition: border .2s, background .2s;
+        font-family: inherit;
+    }
+    .field-group input:focus {
+        outline: none;
+        background: #fff;
+        border-color: #ff8a00;
+    }
+    .save-btn {
+        width: 100%;
+        background: #ff8a00;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 13px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s;
+        margin-top: 4px;
+    }
+    .save-btn:hover {
+        background: #d97800;
+    }
+    .divider-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 18px rgba(17,24,39,0.08);
+    }
+    .password-hint {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 4px;
+    }
+    </style>
+</head>
+<body>
+
+    <!-- NAV ALUMNO -->
+    {% if tipo == 'alumno' %}
+    <div class="topbar">
+        <div class="brand">CENTER GYM</div>
+        <div class="nav">
+            <a href="{% url 'alumno:dashboard' usuario.id %}">Mi Panel</a>
+            <a href="{% url 'alumno:mis_clases' usuario.id %}">Mis Clases</a>
+            <a href="{% url 'alumno:mis_reclamos' usuario.id %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:editar_perfil' usuario.id %}" class="active">Mi Perfil</a>
+            <a href="{% url 'accounts:logout' %}" class="logout-link">Cerrar</a>
+        </div>
+    </div>
+
+    <!-- NAV PROFESOR -->
+    {% else %}
+    <div class="topbar">
+        <div class="brand">CENTER GYM</div>
+        <div class="nav">
+            <a href="{% url 'profesor:mis_clases' usuario.id %}">Mis Clases</a>
+            <a href="{% url 'profesor:editar_perfil' usuario.id %}" class="active">Mi Perfil</a>
+            <a href="{% url 'accounts:logout' %}" class="logout-link">Cerrar</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div style="padding: 32px 24px 0; max-width: 780px; margin: 0 auto;">
+            <h1 style="margin: 0 0 4px; font-size: 26px; color: #111;">Mi Perfil</h1>
+            <p style="color: #666; margin: 0 0 28px; font-size: 15px;">Actualizá tus datos personales o cambiá tu contraseña.</p>
+        </div>
+
+        {% if messages %}
+        <div style="max-width: 780px; margin: 0 auto 16px; padding: 0 24px;">
+            {% for message in messages %}
+                <div style="background:{% if message.tags == 'error' %}#fdecea; color:#8a1f1a; border:1px solid #f5c2c0{% else %}#e6f8ef; color:#1e6d3b; border:1px solid #a1e4b4{% endif %}; padding:13px 16px; border-radius:10px; font-weight:600; font-size:14px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="perfil-grid" style="padding: 0 24px;">
+
+            <!-- DATOS PERSONALES -->
+            <div class="divider-card">
+                <div class="perfil-section-title">Datos personales</div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="actualizar_datos">
+                    <div class="field-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" value="{{ usuario.nombre }}" required>
+                    </div>
+                    <div class="field-group">
+                        <label>Apellido</label>
+                        <input type="text" name="apellido" value="{{ usuario.apellido }}" required>
+                    </div>
+                    <button type="submit" class="save-btn">Guardar cambios</button>
+                </form>
+            </div>
+
+            <!-- CAMBIAR CONTRASEÑA -->
+            <div class="divider-card">
+                <div class="perfil-section-title">Contraseña</div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cambiar_password">
+                    <div class="field-group">
+                        <label>Contraseña actual</label>
+                        <input type="password" name="password_actual" required autocomplete="current-password">
+                    </div>
+                    <div class="field-group">
+                        <label>Nueva contraseña</label>
+                        <input type="password" name="password_nueva" required autocomplete="new-password">
+                        <span class="password-hint">Mínimo 8 caracteres.</span>
+                    </div>
+                    <div class="field-group">
+                        <label>Repetir contraseña</label>
+                        <input type="password" name="password_confirmar" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="save-btn">Cambiar contraseña</button>
+                </form>
+            </div>
+
+        </div>
+
+        <footer class="app-footer sticky-footer">
+            <div class="footer-left">
+                <img src="{% static 'LogoAppGym.png' %}" alt="Logo Center GYM">
+                <div class="footer-text">
+                    <div class="footer-title">TP Final Back End</div>
+                    <div class="footer-note">© 2026 TP Final Back End</div>
+                </div>
+            </div>
+            <div class="footer-contact">
+                <div>Contactanos</div>
+                <div>info@centergym.com • +54 9 11 1234 5678</div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
