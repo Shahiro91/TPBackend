@@ -52,7 +52,7 @@
         <section class="tab-panel{% if active_tab == 'clientes' %} active{% endif %}" id="clientes">
             <section class="page-header">
                 <h1>CLIENTES</h1>
-                <a href="{% url 'alumno:crear_alumno' %}" class="btn btn-primary">+ Nuevo Cliente</a>
+                <button type="button" id="toggleAlumnoFormBtn" class="btn btn-primary">+ Nuevo Cliente</button>
             </section>
             <section class="card">
                 <div class="card-controls">
@@ -80,14 +80,14 @@
                                     data-apellido="{{ alumno.apellido }}"
                                     data-dni="{{ alumno.DNI }}"
                                     data-ingresos="{{ alumno.Ingresos }}"
-                                    data-deuda="{{ alumno.MontoDeuda }}"
+                                    data-deuda="{{ alumno.MontoDeuda|default:'0'|floatformat:2 }}"
                                     data-ultimo-ingreso="{% if alumno.ultimo_ingreso %}{{ alumno.ultimo_ingreso|date:'d/m/Y H:i' }}{% else %}-{% endif %}"
                                     data-clases="{% for clase in alumno.clases.all %}{{ clase.nombre }} ({{ clase.dias }} — {{ clase.horario }}){% if not forloop.last %}|||{% endif %}{% endfor %}"
                                     data-clases-ids="{% for clase in alumno.clases.all %}{{ clase.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
                                     <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                                     <td>{{ alumno.DNI }}</td>
                                     <td>{{ alumno.Ingresos }}</td>
-                                    <td>{{ alumno.MontoDeuda }}</td>
+                                    <td>{{ alumno.MontoDeuda|default:'0'|floatformat:2 }}</td>
                                     <td>{% if alumno.ultimo_ingreso %}{{ alumno.ultimo_ingreso|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
                                     <td class="actions">
                                                      <a href="#" class="edit-alumno-btn" title="Editar"
@@ -363,10 +363,10 @@
 
     <div id="alumnoFormModal" class="modal form-modal {% if show_alumno_form %}show{% endif %}">
         <div class="modal-content">
-            <h2 class="modal-title" id="alumnoFormTitle">Editar Cliente</h2>
+            <h2 class="modal-title" id="alumnoFormTitle">{% if alumno_edit_id %}Editar Cliente{% else %}Nuevo Cliente{% endif %}</h2>
             <form method="post" class="form-card" id="alumnoForm">
                 {% csrf_token %}
-                <input type="hidden" name="action" id="alumno-action" value="editar_alumno">
+                <input type="hidden" name="action" id="alumno-action" value="{% if alumno_edit_id %}editar_alumno{% else %}crear_alumno{% endif %}">
                 <input type="hidden" name="alumno_id" id="alumno-id" value="{{ alumno_edit_id|default:'' }}">
                 <div class="form-group">
                     <label for="alumno-nombre">Nombre</label>
@@ -397,7 +397,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="alumnoSubmitBtn">Guardar Cambios</button>
+                    <button type="submit" class="btn btn-primary" id="alumnoSubmitBtn">{% if alumno_edit_id %}Guardar Cambios{% else %}Crear Cliente{% endif %}</button>
                     <button type="button" id="cancelAlumnoFormBtn" class="btn btn-secondary">Cancelar</button>
                 </div>
             </form>
@@ -691,7 +691,7 @@
 
         initEntityForm({
             modalId: 'alumnoFormModal',
-            toggleBtnId: '',
+            toggleBtnId: 'toggleAlumnoFormBtn',
             cancelBtnId: 'cancelAlumnoFormBtn',
             formId: 'alumnoForm',
             actionInputId: 'alumno-action',
