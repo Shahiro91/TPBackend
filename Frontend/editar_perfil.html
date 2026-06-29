@@ -90,10 +90,10 @@
     <div class="topbar">
         <div class="brand">CENTER GYM</div>
         <div class="nav">
-            <a href="{% url 'alumno:dashboard' usuario.id %}">Mi Panel</a>
-            <a href="{% url 'alumno:mis_clases' usuario.id %}">Mis Clases</a>
-            <a href="{% url 'alumno:mis_reclamos' usuario.id %}">Mis Reclamos</a>
-            <a href="{% url 'alumno:editar_perfil' usuario.id %}" class="active">Mi Perfil</a>
+            <a href="{% url 'alumno:dashboard' %}">Mi Panel</a>
+            <a href="{% url 'alumno:mis_clases' %}">Mis Clases</a>
+            <a href="{% url 'alumno:mis_reclamos' %}">Mis Reclamos</a>
+            <a href="{% url 'alumno:editar_perfil' %}" class="active">Mi Perfil</a>
             <a href="{% url 'accounts:logout' %}" class="logout-link">Cerrar</a>
         </div>
     </div>

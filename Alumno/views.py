@@ -487,6 +487,7 @@ def editar_perfil(request):
                 messages.success(request, 'Contraseña cambiada correctamente.')
 
     return render(request, 'editar_perfil.html', {
-        'usuario': alumno,
+        'usuario': request.user,
+        'alumno': alumno,
         'tipo': 'alumno',
     })

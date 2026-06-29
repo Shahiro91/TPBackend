@@ -19,3 +19,12 @@ class AlumnoCreateForm(forms.ModelForm):
         if Alumno.objects.filter(DNI=dni).exists():
             raise ValidationError('Ya existe un alumno registrado con ese DNI.')
         return dni
+
+    def clean_MontoDeuda(self):
+        monto = self.cleaned_data.get('MontoDeuda')
+        if monto is None or monto == '':
+            return 0.00
+        try:
+            return float(monto)
+        except (ValueError, TypeError):
+            raise ValidationError('El monto de deuda debe ser un número válido.')
